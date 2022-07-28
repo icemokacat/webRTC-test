@@ -1,0 +1,32 @@
+{
+  "name": "webrtc-test",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Zoom Clone using WebRTC and Websockets",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/icemokacat/webRTC-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/icemokacat/webRTC-test/issues"
+  },
+  "homepage": "https://github.com/icemokacat/webRTC-test#readme",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.18.9",
+    "@babel/core": "^7.18.9",
+    "@babel/node": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "nodemon": "^2.0.19"
+  },
+  "dependencies": {
+    "express": "^4.18.1",
+    "pug": "^3.0.2"
+  }
+}
