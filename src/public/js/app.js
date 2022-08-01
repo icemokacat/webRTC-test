@@ -1,23 +1,41 @@
 const socket = io();
 
-const welcome = document.getElementById("welcome")
-const form = welcome.querySelector("form")
+const welcome   = document.getElementById("welcome")
+const enterForm = welcome.querySelector("form")
+const room      = document.getElementById("room");
+
+room.hidden = true;
 
 // functions
-function backendDone(msg){
-    console.log("The backend says:"+msg);
+function showRoom(){
+    welcome.hidden  = true;
+    room.hidden     = false;
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName}`;
 }
 
+let roomName;
+
+function addMessage(message){
+    const ul = room.querySelector("ul");
+    const li = document.createElement("li");
+    li.innerText = message;
+    ul.appendChild(li);
+}
+
+// room enter
 function handleRoomSubmit(event){
     event.preventDefault();
-    const input = form.querySelector("input");
+    const input = enterForm.querySelector("input");
     // websocket의 send
-    socket.emit("enter_room",input.value,
-        // callback func to back end
-        // 마지막은 callback func 임
-        backendDone
-    );
+    socket.emit("enter_room",input.value,showRoom);
+    roomName = input.value;
     input.value = "";
 }
 
-form.addEventListener("submit",handleRoomSubmit)
+// room enter event listner
+enterForm.addEventListener("submit",handleRoomSubmit)
+
+socket.on("welcome",()=>{
+    addMessage('Someone joined! :smile:')
+})

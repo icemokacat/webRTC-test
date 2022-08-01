@@ -3,7 +3,6 @@ import http from "http";
 import {Server} from "socket.io";
 //import WebSocket from "ws";
 import path from 'path';
-import { doesNotThrow } from "assert";
 
 const __dirname = path.resolve();   // common 모듈이 아닌 es 모듈사용시 import 시켜줘야함
 const app = express();
@@ -29,11 +28,15 @@ const wsServer      = new Server(httpServer);
 wsServer.on("connection", socket => {
     // 여러개의 파라미터 전송 가능
     // 마지막은 callback func 임
+    socket.onAny((event)=>{
+        console.log(`Socket Event:${event}`);
+    })
     socket.on("enter_room", (roomName,done) => {
-        console.log(roomName);
-        setTimeout(()=>{
-            done("hello from the backend");
-        },10000)
+        socket.join(roomName);
+        done();
+        socket.to(roomName).emit("welcome", () =>{
+            console.log("welcome")
+        })
     });
 })
 
