@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express, { json, response } from "express";
 import http from "http";
 import WebSocket from "ws";
 import path from 'path';
@@ -25,15 +25,52 @@ const handleListen = () => console.log(`Listen on http://localhost:`+port);
 const server    = http.createServer(app);
 const wss       = new WebSocket.Server({server});
 
+function onSocketClose() {
+    console.log("Disconnected from the Browser ❌");
+}
+
+function onSocketMessage(message) {
+    console.log(message);
+}
+
+function getPayload(json){
+   const payload = json['payload'];
+   return payload; 
+}
+
+function getType(json){
+    const type = json['type'];
+    return type;
+}
+
+const sockets   = [];
+const nickNames = [];
+
 // connection eventListner
 wss.on("connection",(socket) => {
+    sockets.push(socket);
+    socket["nickname"] = "Anos";
     console.log("Connected to Browser ✅");
     // client 연결 끊기면 실행 (여기서는 browser)
-    socket.on("close",() => console.log("Disconnected from the Browser ❎") );
-    socket.on("message", message => {
-        console.log("from browser msg : "+message);
+    socket.on("close"   ,onSocketClose );
+    socket.on("message" , (msg) => {
+        const message   = JSON.parse(msg);
+        const type      = getType(message);
+        const payload   = getPayload(message);
+
+        switch (type) {
+            case 'new_message':
+                // 메세지일때
+                sockets.forEach((aSocket) => {
+                    aSocket.send(`[${socket.nickname}] : ${payload}`);
+                })
+            case 'nickname':
+                // 닉네임일때
+                nickNames.push(payload);
+                socket["nickname"] = message.payload;
+        }
+        
     });
-    socket.send("Hello socket!");
 });
 
 server.listen(port,handleListen);
