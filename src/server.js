@@ -2,6 +2,8 @@ import express, { json, response } from "express";
 import http from "http";
 import {Server} from "socket.io";
 //import WebSocket from "ws";
+import { instrument } from "@socket.io/admin-ui"
+
 import path from 'path';
 
 const __dirname = path.resolve();   // common 모듈이 아닌 es 모듈사용시 import 시켜줘야함
@@ -23,7 +25,17 @@ const port = 3000;
 const handleListen = () => console.log(`Listen on http://localhost:`+port);
 
 const httpServer    = http.createServer(app);
-const wsServer      = new Server(httpServer);
+const wsServer      = new Server(httpServer,{
+    cors: {
+        origin: ["https://admin.socket.io"],
+        credentials: true
+    }
+});
+
+instrument(wsServer, {
+    auth: false,
+    namespaceName: '/admin'
+});
 
 function publicRooms(){
     // destructuring assignment (구조 분해 할당)
@@ -42,6 +54,10 @@ function publicRooms(){
     return publicRooms;
 }
 
+function countRoom(roomName){
+    return wsServer.sockets.adapter.rooms.get(roomName)?.size;
+}
+
 wsServer.on("connection", socket => {
     // 여러개의 파라미터 전송 가능
     // 마지막은 callback func 임
@@ -53,12 +69,19 @@ wsServer.on("connection", socket => {
     socket.on("enter_room", (roomName,done) => {
         socket.join(roomName);
         done();
-        socket.to(roomName).emit("welcome",socket.nickname)
+        socket.to(roomName).emit("welcome",socket.nickname,countRoom(roomName))
+        wsServer.sockets.emit("room_change",publicRooms());
     });
     socket.on("disconnecting",() => {
+        // 연결이 끊기기 전에 작동
+        // bye
         socket.rooms.forEach((room) =>
-            socket.to(room).emit("bye", socket.nickname)
+            socket.to(room).emit("bye", socket.nickname,countRoom(room) - 1)
         );
+        //wsServer.sockets.emit("room_change",publicRooms());
+    });
+    socket.on("disconnect",() => {        
+        wsServer.sockets.emit("room_change",publicRooms());
     });
     socket.on("new_message",(msg,room,done)=>{
         socket.to(room).emit("new_message",`[${socket.nickname}]:${msg}`);
