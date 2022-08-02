@@ -25,73 +25,48 @@ const handleListen = () => console.log(`Listen on http://localhost:`+port);
 const httpServer    = http.createServer(app);
 const wsServer      = new Server(httpServer);
 
+function publicRooms(){
+    // destructuring assignment (구조 분해 할당)
+    // https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+    const {rooms,sids} = wsServer.sockets.adapter;
+
+
+    //const sids = wsServer.sockets.adapter.sids;
+    //const rooms = wsServer.sockets.adapter.rooms;
+    const publicRooms = [];
+    rooms.forEach((_,key) => {
+        if(sids.get(key) === undefined){
+            publicRooms.push(key);
+        }
+    })
+    return publicRooms;
+}
+
 wsServer.on("connection", socket => {
     // 여러개의 파라미터 전송 가능
     // 마지막은 callback func 임
+    socket["nickname"] = "Anon";
     socket.onAny((event)=>{
+        //console.log(wsServer.sockets.adapter);
         console.log(`Socket Event:${event}`);
     })
     socket.on("enter_room", (roomName,done) => {
         socket.join(roomName);
         done();
-        socket.to(roomName).emit("welcome", () =>{
-            console.log("welcome")
-        })
+        socket.to(roomName).emit("welcome",socket.nickname)
     });
     socket.on("disconnecting",() => {
-        socket.rooms.forEach(room => socket.to(room).emit("bye"));
+        socket.rooms.forEach((room) =>
+            socket.to(room).emit("bye", socket.nickname)
+        );
     });
     socket.on("new_message",(msg,room,done)=>{
-        socket.to(room).emit("new_message",msg);
+        socket.to(room).emit("new_message",`[${socket.nickname}]:${msg}`);
         done();
+    });
+    socket.on("nickname",(nickname)=>{
+       socket["nickname"] = nickname;    
     })
 })
-
-// function onSocketClose() {
-//     console.log("Disconnected from the Browser ❌");
-// }
-
-// function onSocketMessage(message) {
-//     console.log(message);
-// }
-
-// function getPayload(json){y
-//    const payload = json['payload'];
-//    return payload; 
-// }
-
-// function getType(json){
-//     const type = json['type'];
-//     return type;
-// }
-
-//const sockets   = [];
-
-// connection eventListner
-// wss.on("connection",(socket) => {
-//     sockets.push(socket);
-//     socket["nickname"] = "Anos";
-//     console.log("Connected to Browser ✅");
-//     // client 연결 끊기면 실행 (여기서는 browser)
-//     socket.on("close"   ,onSocketClose );
-//     socket.on("message" , (msg) => {
-//         const message   = JSON.parse(msg);
-//         const type      = getType(message);
-//         const payload   = getPayload(message);
-
-//         switch (type) {
-//             case 'new_message':
-//                 // 메세지일때
-//                 sockets.forEach((aSocket) => {
-//                     aSocket.send(`[${socket.nickname}] : ${payload}`);
-//                 })
-//             case 'nickname':
-//                 // 닉네임일때
-//                 nickNames.push(payload);
-//                 socket["nickname"] = message.payload;
-//         }
-        
-//     });
-// });
 
 httpServer.listen(port,handleListen);
