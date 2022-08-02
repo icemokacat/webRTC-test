@@ -24,6 +24,17 @@ const serverDomain  = 'localhost';
 const httpServer    = http.createServer(app);
 const wsServer      = new Server(httpServer);
 
+wsServer.on("connection",socket => {
+    socket.on("join_room",(roomName,done) => {
+        socket.join(roomName);
+        done();
+        socket.to(roomName).emit("welcome");
+    })
+    socket.on("offer",(offer,roomName) => {
+        socket.to(roomName).emit("offer",offer);
+    })
+})
+
 // server 시작시 실행할 함수
 const handleListen = () => console.log(`Listen on http://`+serverDomain+`:`+port);
 
