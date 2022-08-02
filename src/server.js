@@ -38,6 +38,13 @@ wsServer.on("connection", socket => {
             console.log("welcome")
         })
     });
+    socket.on("disconnecting",() => {
+        socket.rooms.forEach(room => socket.to(room).emit("bye"));
+    });
+    socket.on("new_message",(msg,room,done)=>{
+        socket.to(room).emit("new_message",msg);
+        done();
+    })
 })
 
 // function onSocketClose() {
@@ -48,7 +55,7 @@ wsServer.on("connection", socket => {
 //     console.log(message);
 // }
 
-// function getPayload(json){
+// function getPayload(json){y
 //    const payload = json['payload'];
 //    return payload; 
 // }
