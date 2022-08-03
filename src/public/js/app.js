@@ -96,8 +96,16 @@ function handleCameraOffBtn (){
         cameraOff = true;    
     }
 }
+
 async function handleChangeCamera(){
     await getMedia(camerasSelect.value);
+    if(myPeerConnection){
+        const videoTrack = myStream.getVideoTracks()[0];
+        const videoSender = myPeerConnection.getSenders().find(
+            sender => sender.track.kind === "video"
+        );
+        videoSender.replaceTrack(videoTrack)
+    }
 }
 
 muteBtn.addEventListener("click",handleMuteBtn)
@@ -138,22 +146,77 @@ socket.on("welcome",async () => {
 })
 
 socket.on("offer",async (offer) => {
+    console.log("received the offer")
     myPeerConnection.setRemoteDescription(offer);
+
     const answer = await myPeerConnection.createAnswer();
     myPeerConnection.setLocalDescription(answer);
+
     socket.emit("answer",answer,roomName);
+    console.log("sent the answer");
 })
 
-socket.on("answer",async (answer) => {
-    myPeerConnection.setLocalDescription(answer);
+socket.on("answer",async (answer,remoteInfo) => {
+    console.log("received the answer")
+    // The SDP(Session Description Protocol) does not match the previously generated SDP
+    // since the latest WebRTC spec forbids SDP munging between createOffer and setLocalDescription.
+    // https://webrtcstandards.info/end-of-sdp-in-webrtc/
+    try{
+        myPeerConnection.setRemoteDescription(answer);
+    }catch(e){
+        console.error(e);
+    }
 })
+
+socket.on("ice",async (ice)=>{
+    console.log("receive ice")
+    try{
+        if(myPeerConnection.remoteDescription){
+            myPeerConnection.addIceCandidate(ice);
+        }else{
+            console.warn("required remoteDescription")
+        }
+    }catch(e){
+        console.error(e);
+    }
+    
+})
+
 
 // RTC Code
 
 function makeConnection(){
     // peer to peer connect
-    myPeerConnection = new RTCPeerConnection();
-    myStream.getTracks().forEach(track => {
-        myPeerConnection.addTrack(track,myStream);
-    })
+    const connectConfig = {
+        iceServers:[
+            {
+                urls:[
+                    // "stun.l.google.com:19302",
+                    "turn:turn ip",
+                ],
+                username:   "turn server id",
+                credential: "password"
+            }
+        ]
+    }
+    myPeerConnection = new RTCPeerConnection(connectConfig);
+    myPeerConnection.addEventListener("icecandidate",handleIce);
+    myPeerConnection.addEventListener("addstream",handleAddStream);
+    myStream
+        .getTracks()
+        .forEach(track => myPeerConnection.addTrack(track,myStream));
+}
+
+function handleIce(data){
+    console.log("sent candidate")
+    socket.emit("ice",data.candidate,roomName);
+}
+
+function handleAddStream(data){
+    //console.log("got an event from my peer")
+    //console.log("Peer's Stream \t"  ,data.stream);
+    //console.log("My Stream \t"      ,myStream);
+    const peersStream = document.getElementById("peersFace")
+    console.log("Peer's Stream Start!")
+    peersStream.srcObject = data.stream;
 }
