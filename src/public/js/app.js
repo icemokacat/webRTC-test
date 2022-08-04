@@ -17,6 +17,18 @@ let cameraOff = false;
 let roomName;
 let myPeerConnection;
 
+let turnServerDomain;
+let turnServerId;
+let turnServerPwd;
+
+const promise = fetch("/turn-config")
+.then(res => {
+    const turnConfig = res;
+    turnServerDomain    = turnConfig.server;
+    turnServerId        = turnConfig.id;
+    turnServerPwd       = turnConfig.pw;
+})
+
 async function getCameras(){
     // 기기?가 가지고 있는 카메라 장치들을 가져옴
     try {
@@ -191,11 +203,10 @@ function makeConnection(){
         iceServers:[
             {
                 urls:[
-                    // "stun.l.google.com:19302",
-                    "turn:turn ip",
+                    turnServerDomain
                 ],
-                username:   "turn server id",
-                credential: "password"
+                username    :   turnServerId,
+                credential  :   turnServerPwd
             }
         ]
     }

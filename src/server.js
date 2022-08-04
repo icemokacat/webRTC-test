@@ -3,6 +3,10 @@ import http from "http";
 import {Server} from "socket.io";
 import path from 'path';
 
+// 환경설정
+import dotenv from "dotenv";
+dotenv.config();
+
 const __dirname = path.resolve();   // common 모듈이 아닌 es 모듈사용시 import 시켜줘야함
 const app = express();
 
@@ -15,10 +19,22 @@ app.use("/public", express.static(__dirname + "/src/public"));
 
 // router
 app.get("/" , (_, res) => res.render("home"));
-app.get("/*", (_, res) => res.redirect("/"));
+//app.get("/*", (_, res) => res.redirect("/"));
+app.get("/turn-config",(_, res) => {
+    const turnServerDomain  = process.env.TURN_SERVER_DOMAIN;
+    const turnServerId      = process.env.TURN_SERVER_ID;
+    const turnServerPwd     = process.env.TURN_SERVER_PASSWD;
+    const config = {
+        server  : turnServerDomain,
+        id      : turnServerId,
+        pw      : turnServerPwd
+    };
+    res.send(config)
+});
+
 
 // server 세팅
-const port          = 3000;
+const port          = process.env.SERVER_PORT;
 const serverDomain  = 'localhost';
 
 const httpServer    = http.createServer(app);
