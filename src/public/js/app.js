@@ -161,15 +161,23 @@ async function handleWelcomeSubmit(event){
 welcomeForm.addEventListener("submit",handleWelcomeSubmit);
 
 // chat form
-const chatForm = chatDiv.querySelector("form");
+const chatForm  = document.getElementById("chatfoot");
+const chatInp   = chatForm.querySelector("input");
+const enterBtn  = chatForm.querySelector("button")
 
 function sendChatMsg(){
-    const msgInput = document.getElementById("msg")
-    const msg = msgInput.value;
+    const msg = chatInp.value;
     myDataChannel.send(msg);
 }
 
-chatForm.addEventListener("submit",sendChatMsg)
+chatInp.addEventListener("keyup",event => {
+    if(event.key == "Enter"){
+        sendChatMsg();
+    }
+})
+enterBtn.addEventListener("click",event => {
+    sendChatMsg();
+})
 
 
 // Socket Code
@@ -240,9 +248,8 @@ socket.on("ice",async (ice)=>{
 
 // chat
 function addChatMessage(msg){
-    console.log("msg:"+msg)
-    var ulList = document.getElementById("list");
-    var li = document.createElement("li");
+    var ulList  = document.getElementById("list");
+    var li      = document.createElement("li");
     li.innerText = msg;
     ulList.appendChild(li);
 }
