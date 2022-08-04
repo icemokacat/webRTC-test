@@ -20,7 +20,7 @@ app.use("/public", express.static(__dirname + "/src/public"));
 // router
 app.get("/" , (_, res) => res.render("home"));
 //app.get("/*", (_, res) => res.redirect("/"));
-app.get("/turn-config",(_, res) => {
+app.post("/turn-config",(_, res) => {
     const turnServerDomain  = process.env.TURN_SERVER_DOMAIN;
     const turnServerId      = process.env.TURN_SERVER_ID;
     const turnServerPwd     = process.env.TURN_SERVER_PASSWD;

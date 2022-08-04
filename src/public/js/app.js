@@ -21,13 +21,22 @@ let turnServerDomain;
 let turnServerId;
 let turnServerPwd;
 
-const promise = fetch("/turn-config")
-.then(res => {
-    const turnConfig = res;
-    turnServerDomain    = turnConfig.server;
-    turnServerId        = turnConfig.id;
-    turnServerPwd       = turnConfig.pw;
-})
+const option = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+}
+fetch("/turn-config",option)
+.then(res => res.json())
+.then(
+    (data) => {
+        console.log(data)
+        turnServerDomain    = data.server;
+        turnServerId        = data.id;
+        turnServerPwd       = data.pw;
+    }
+)
 
 async function getCameras(){
     // 기기?가 가지고 있는 카메라 장치들을 가져옴
