@@ -1,0 +1,62 @@
+
+#container{
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+}
+#layer{
+    border: 1px solid #ffffff;
+    border-radius: 26px 26px 26px 26px;
+    padding: 20px;
+    margin-right: 20px;
+    box-shadow: 2px 2px 2px 2px #bccee5;
+    border-top: 1px solid #bccee5;
+    border-left: 1px solid #bccee5;
+}
+#myStream{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#myFace{
+    margin-right: 20px;
+}
+#func{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+#func > *{
+    padding: 5px;
+    margin: 5px;
+}
+select#cameras{
+    padding: 10px;
+    margin: 10px;
+}
+#chat{
+
+}
+#chform{
+    min-height: 420px;
+    border-radius: 26px 26px 26px 26px;
+}
+#chatfoot{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+#chatfoot > *{
+    padding: 10px;
+    margin: 10px;
+    border: none;
+}
+#msg{
+    height: 26px;
+    width: 260px;
+}
+#enter{
+
+}

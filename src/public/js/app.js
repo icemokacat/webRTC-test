@@ -7,8 +7,10 @@ const camerasSelect = document.getElementById("cameras");
 
 const callDiv      = document.getElementById("call");
 const myStreamDiv  = document.getElementById("myStream");
+const chatDiv      = document.getElementById("chat");
 
 callDiv.hidden = true;
+chatDiv.hidden = true;
 
 
 let myStream;
@@ -16,6 +18,7 @@ let muted = false;
 let cameraOff = false;
 let roomName;
 let myPeerConnection;
+let myDataChannel;
 
 let turnServerDomain;
 let turnServerId;
@@ -141,6 +144,7 @@ const welcomeForm   = welcomeDiv.querySelector("form");
 async function initCall(){
     welcomeDiv.hidden = true;
     callDiv.hidden = false;
+    chatDiv.hidden = false;
     await getMedia();
     makeConnection();
 }
@@ -156,17 +160,48 @@ async function handleWelcomeSubmit(event){
 
 welcomeForm.addEventListener("submit",handleWelcomeSubmit);
 
+// chat form
+const chatForm = chatDiv.querySelector("form");
+
+function sendChatMsg(){
+    const msgInput = document.getElementById("msg")
+    const msg = msgInput.value;
+    myDataChannel.send(msg);
+}
+
+chatForm.addEventListener("submit",sendChatMsg)
+
+
 // Socket Code
 
 socket.on("welcome",async () => {
+    // peer A datachannel
+    myDataChannel = myPeerConnection.createDataChannel("chat");
+    myDataChannel.addEventListener("message",msg => {
+        addChatMessage(msg.data);
+    })
+    console.log("made data channel")
+
     const offer = await myPeerConnection.createOffer();
     // offer : 접속한 peer의 정보 (접속할 수 있도록)
+
+    // dataChannel 사용시 offer를 제공하는 측에서 열어줘야함
+
     myPeerConnection.setLocalDescription(offer);
     console.log("sent the offer!")
     socket.emit("offer",offer,roomName);
 })
 
 socket.on("offer",async (offer) => {
+
+    // peer B datachannel
+    myPeerConnection.addEventListener("datachannel",data => {
+        myDataChannel = data.channel;
+        myDataChannel.addEventListener("message",msg => {
+            addChatMessage(msg.data);
+        })
+    })
+
     console.log("received the offer")
     myPeerConnection.setRemoteDescription(offer);
 
@@ -202,6 +237,15 @@ socket.on("ice",async (ice)=>{
     }
     
 })
+
+// chat
+function addChatMessage(msg){
+    console.log("msg:"+msg)
+    var ulList = document.getElementById("list");
+    var li = document.createElement("li");
+    li.innerText = msg;
+    ulList.appendChild(li);
+}
 
 
 // RTC Code
