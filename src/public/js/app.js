@@ -34,7 +34,7 @@ fetch("/turn-config",option)
 .then(res => res.json())
 .then(
     (data) => {
-        console.log(data)
+        //console.log(data)
         turnServerDomain    = data.server;
         turnServerId        = data.id;
         turnServerPwd       = data.pw;
@@ -195,8 +195,8 @@ socket.on("welcome",async () => {
 socket.on("offer",async (offer) => {
 
     // peer B datachannel
-    myPeerConnection.addEventListener("datachannel",data => {
-        myDataChannel = data.channel;
+    myPeerConnection.addEventListener("datachannel",event => {
+        myDataChannel = event.channel;
         myDataChannel.addEventListener("message",msg => {
             addChatMessage(msg.data);
         })
