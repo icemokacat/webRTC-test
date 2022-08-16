@@ -20,18 +20,6 @@ app.use("/public", express.static(__dirname + "/src/public"));
 // router
 app.get("/" , (_, res) => res.render("home"));
 //app.get("/*", (_, res) => res.redirect("/"));
-app.post("/turn-config",(_, res) => {
-    const turnServerDomain  = process.env.TURN_SERVER_DOMAIN;
-    const turnServerId      = process.env.TURN_SERVER_ID;
-    const turnServerPwd     = process.env.TURN_SERVER_PASSWD;
-    const config = {
-        server  : turnServerDomain,
-        id      : turnServerId,
-        pw      : turnServerPwd
-    };
-    res.send(config)
-});
-
 
 // server 세팅
 const port          = process.env.SERVER_PORT;
@@ -41,19 +29,19 @@ const httpServer    = http.createServer(app);
 const wsServer      = new Server(httpServer);
 
 wsServer.on("connection",socket => {
-    socket.on("join_room",(roomName) => {
-        socket.join(roomName);
-        socket.to(roomName).emit("welcome");
-    })
-    socket.on("offer",(offer,roomName) => {
-        socket.to(roomName).emit("offer",offer);
-    })
-    socket.on("answer",(answer,roomName) => {
-        socket.to(roomName).emit("answer",answer);
-    });
-    socket.on("ice",(ice,roomName) => {
-        socket.to(roomName).emit("ice",ice);
-    });
+    // socket.on("join_room",(roomName) => {
+    //     socket.join(roomName);
+    //     socket.to(roomName).emit("welcome");
+    // })
+    // socket.on("offer",(offer,roomName) => {
+    //     socket.to(roomName).emit("offer",offer);
+    // })
+    // socket.on("answer",(answer,roomName) => {
+    //     socket.to(roomName).emit("answer",answer);
+    // });
+    // socket.on("ice",(ice,roomName) => {
+    //     socket.to(roomName).emit("ice",ice);
+    // });
 })
 
 // server 시작시 실행할 함수
